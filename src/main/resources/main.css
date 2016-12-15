@@ -1,0 +1,29 @@
+.validation-error{
+    -fx-border-color: red;
+}
+.validation-warning{
+    -fx-border-color: orange;
+}
+
+.list-view {
+    -fx-selection-bar:green ;
+    -fx-selection-bar-non-focused: green;
+}
+
+.message-list-cell {
+    -fx-wrap-text: true;
+}
+
+.message-list-cell.unread {
+    -fx-font-weight: bold;
+}
+
+.contact-list-view {
+    -fx-fixed-cell-size: 60px;
+}
+
+.contact-list-cell.unread {
+    -fx-background-color: gold;
+    -fx-font-weight: bold;
+   /* -fx-text-fill: gold;*/
+}

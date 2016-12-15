@@ -1,0 +1,13 @@
+<?language javascript?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.StackPane?>
+<BorderPane fx:id="rootPane" xmlns:fx="http://www.w3.org/1999/xhtml" fx:controller="contactus.view.MainController"
+            prefWidth="640" prefHeight="480">
+    <left>
+
+    </left>
+    <center>
+        <StackPane fx:id="content">
+        </StackPane>
+    </center>
+</BorderPane>

@@ -1,0 +1,9 @@
+<?language javascript?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.web.WebView?>
+<BorderPane fx:id="rootPane" xmlns:fx="http://www.w3.org/1999/xhtml" fx:controller="contactus.view.LoginController"
+            prefWidth="600" prefHeight="450">
+    <center>
+        <WebView fx:id="webView"/>
+    </center>
+</BorderPane>
