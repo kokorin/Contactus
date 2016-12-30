@@ -1,6 +1,7 @@
 package contactus.view;
 
-import contactus.core.UserActor;
+import com.vk.api.sdk.client.actors.UserActor;
+import contactus.core.Session;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
@@ -18,13 +19,13 @@ public class LoginController {
     @FXML
     protected WebView webView;
 
-    private final UserActor userActor;
+    private final Session session;
 
     private static final String API_VERSION = "5.45";
     private static final Pattern AUTH_URL_PATTERN = Pattern.compile("^[^#]+#access_token=(.+)&expires_in=(.*)&user_id=(.*)$");
 
-    public LoginController(UserActor userActor) {
-        this.userActor = userActor;
+    public LoginController(Session session) {
+        this.session = session;
     }
 
     @FXML
@@ -74,7 +75,8 @@ public class LoginController {
                 System.out.println("Wrong URL format: " + url);
             }
 
-            userActor.update(userId, token, expiration);
+            UserActor actor = new UserActor(userId, token);
+            session.update(actor, expiration);
         }
     }
 
