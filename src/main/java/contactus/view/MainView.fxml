@@ -1,13 +1,12 @@
 <?language javascript?>
+<?import javafx.scene.control.ListView?>
 <?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.StackPane?>
 <BorderPane fx:id="rootPane" xmlns:fx="http://www.w3.org/1999/xhtml" fx:controller="contactus.view.MainController"
             prefWidth="640" prefHeight="480">
     <left>
-
+        <ListView fx:id="contactList"/>
     </left>
     <center>
-        <StackPane fx:id="content">
-        </StackPane>
+        <ListView fx:id="messageList"/>
     </center>
 </BorderPane>

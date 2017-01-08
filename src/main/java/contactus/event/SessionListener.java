@@ -7,6 +7,7 @@ import contactus.core.Updater;
 import contactus.model.Contact;
 import contactus.model.ContactGroup;
 import contactus.model.Message;
+import contactus.picocontainer.ContainerAdapter;
 import contactus.repository.ContactRepository;
 import contactus.repository.MessageRepository;
 import contactus.repository.RepositoryFactory;
@@ -15,15 +16,15 @@ import contactus.view.LoginController;
 import contactus.view.MainController;
 import contactus.view.View;
 import javafx.stage.Stage;
+import org.picocontainer.DefaultPicoContainer;
 import org.picocontainer.PicoContainer;
 
 import java.io.Closeable;
 
 public class SessionListener implements EventListener<Session> {
     private final Stage stage;
-    private final PicoContainer container;
+    private final PicoContainer parentContainer;
     private final EventDispatcher eventDispatcher;
-    private final View view;
 
     private MessageRepository messageRepository;
     private ContactRepository contactRepository;
@@ -35,11 +36,10 @@ public class SessionListener implements EventListener<Session> {
 
     private Session session;
 
-    public SessionListener(Stage stage, PicoContainer container) {
+    public SessionListener(Stage stage, PicoContainer parentContainer) {
         this.stage = stage;
-        this.container = container;
-        this.view = container.getComponent(View.class);
-        this.eventDispatcher = container.getComponent(EventDispatcher.class);
+        this.parentContainer = parentContainer;
+        this.eventDispatcher = parentContainer.getComponent(EventDispatcher.class);
     }
 
     @Override
@@ -56,16 +56,12 @@ public class SessionListener implements EventListener<Session> {
 
 
     private synchronized void onLogin(Session session) {
-        MainController controller = view.forController(MainController.class)
-                .onStage(stage)
-                .withTitle("Contactus")
-                .show();
 
         RepositoryFactory factory = new InMemoryRepositoryFactory(session.getUserId());
         messageRepository = factory.openMessageRepository();
         contactRepository = factory.openUserRepository();
 
-        VkApiClient client = container.getComponent(VkApiClient.class);
+        VkApiClient client = parentContainer.getComponent(VkApiClient.class);
         updater = Updater.builder()
                 .actor(session.getActor())
                 .client(client)
@@ -87,10 +83,24 @@ public class SessionListener implements EventListener<Session> {
         eventDispatcher.addListener(Contact.class, contactListener);
         eventDispatcher.addListener(Message.class, messageListener);
         eventDispatcher.addListener(AddMessage.class, addMessageListener);
+
+        PicoContainer authContainer = new DefaultPicoContainer(parentContainer)
+                .addComponent(View.class)
+                .addAdapter(new ContainerAdapter())
+                .addComponent(MainController.class)
+                .addComponent(messageRepository)
+                .addComponent(contactRepository);
+
+        MainController controller = authContainer.getComponent(View.class)
+                .forController(MainController.class)
+                .onStage(stage)
+                .withTitle("Contactus")
+                .show();
     }
 
     private synchronized void onLogout() {
-        LoginController controller = view.forController(LoginController.class)
+        LoginController controller = parentContainer.getComponent(View.class)
+                .forController(LoginController.class)
                 .onStage(stage)
                 .withTitle("Contactus Login")
                 .show();

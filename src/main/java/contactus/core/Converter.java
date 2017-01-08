@@ -7,6 +7,8 @@ import com.vk.api.sdk.objects.users.User;
 import contactus.model.Contact;
 import contactus.model.ContactGroup;
 
+import java.time.Instant;
+
 public class Converter {
     private Converter(){}
 
@@ -43,6 +45,8 @@ public class Converter {
         result.setId(message.getId());
         result.setTitle(message.getTitle());
         result.setBody(message.getBody());
+        result.setUserId(message.getUserId());
+        result.setDate(Instant.ofEpochMilli(message.getDate()));
 
         return result;
     }

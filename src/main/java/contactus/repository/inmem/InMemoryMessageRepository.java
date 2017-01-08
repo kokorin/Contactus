@@ -5,6 +5,7 @@ import contactus.repository.MessageRepository;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 class InMemoryMessageRepository extends InMemoryRepository<Message> implements MessageRepository {
@@ -19,9 +20,9 @@ class InMemoryMessageRepository extends InMemoryRepository<Message> implements M
     }
 
     @Override
-    public List<Message> loadAll(Integer fromId) {
+    public List<Message> loadAll(Integer userId) {
         List<Message> result = getData().values().stream()
-                .filter(m -> m.getFromId().equals(fromId))
+                .filter(m -> Objects.equals(m.getUserId(), userId))
                 .collect(Collectors.toList());
         result.sort(Comparator.comparing(Message::getDate).reversed());
 
