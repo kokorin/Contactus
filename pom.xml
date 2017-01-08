@@ -20,13 +20,25 @@
         <dependency>
             <groupId>com.vk.api</groupId>
             <artifactId>sdk</artifactId>
-            <version>0.3.9</version>
+            <version>0.3.9-LONGPOLLING</version>
         </dependency>
         <dependency>
             <groupId>org.picocontainer</groupId>
             <artifactId>picocontainer</artifactId>
             <version>2.15</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.7</version>
+        </dependency>
+
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>

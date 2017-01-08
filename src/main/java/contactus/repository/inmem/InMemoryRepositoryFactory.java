@@ -1,8 +1,8 @@
 package contactus.repository.inmem;
 
+import contactus.repository.ContactRepository;
 import contactus.repository.MessageRepository;
 import contactus.repository.RepositoryFactory;
-import contactus.repository.UserRepository;
 
 public class InMemoryRepositoryFactory implements RepositoryFactory {
     private final int userId;
@@ -11,8 +11,8 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
         this.userId = userId;
     }
 
-    public UserRepository openUserRepository() {
-        return new InMemoryUserRepository();
+    public ContactRepository openUserRepository() {
+        return new InMemoryContactRepository();
     }
 
     public MessageRepository openMessageRepository() {

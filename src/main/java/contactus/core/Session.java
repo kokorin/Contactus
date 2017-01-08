@@ -1,48 +1,68 @@
 package contactus.core;
 
 import com.vk.api.sdk.client.actors.UserActor;
-import javafx.beans.property.ReadOnlyBooleanProperty;
-import javafx.beans.property.ReadOnlyBooleanWrapper;
-import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.property.ReadOnlyObjectWrapper;
 
 import java.time.Instant;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Session {
-    private final ReadOnlyObjectWrapper<UserActor> actor = new ReadOnlyObjectWrapper<>();
-    private final ReadOnlyObjectWrapper<Instant> expiration = new ReadOnlyObjectWrapper<>();
-    private final ReadOnlyBooleanWrapper isAuthorized = new ReadOnlyBooleanWrapper();
+    private final Integer userId;
+    private final String accessToken;
+    private final Instant expiration;
 
-    public Session() {
-        isAuthorized.bind(actor.isNotNull().and(expiration.isNotNull()));
+    public static final Session EMPTY = new Session(null, null, null);
+    private static final Pattern AUTH_URL_PATTERN = Pattern.compile("^[^#]+#access_token=(.+)&expires_in=(.*)&user_id=(.*)$");
+
+    public Session(Integer userId, String accessToken, Instant expiration) {
+        this.userId = userId;
+        this.accessToken = accessToken;
+        this.expiration = expiration;
     }
 
-    public void update(UserActor actor, Instant expiration) {
-        this.actor.setValue(actor);
-        this.expiration.setValue(expiration);
+    public Integer getUserId() {
+        return userId;
     }
 
-    public UserActor getActor() {
-        return actor.get();
-    }
-
-    public ReadOnlyObjectProperty<UserActor> actorProperty() {
-        return actor.getReadOnlyProperty();
+    public String getAccessToken() {
+        return accessToken;
     }
 
     public Instant getExpiration() {
-        return expiration.get();
+        return expiration;
     }
 
-    public ReadOnlyObjectProperty<Instant> expirationProperty() {
-        return expiration.getReadOnlyProperty();
+    public UserActor getActor() {
+        return new UserActor(userId, accessToken);
     }
 
-    public boolean isIsAuthorized() {
-        return isAuthorized.get();
+    public boolean isAuthorized() {
+        return userId != null && accessToken != null && expiration != null;
     }
 
-    public ReadOnlyBooleanProperty isAuthorizedProperty() {
-        return isAuthorized.getReadOnlyProperty();
+    public static Session parseUrl(String url) {
+        if (url == null) {
+            return EMPTY;
+        }
+
+        Matcher matcher = AUTH_URL_PATTERN.matcher(url);
+        if (!matcher.find()) {
+            return EMPTY;
+        }
+
+        String token = null;
+        Integer userId = null;
+        Instant expiration = null;
+
+        try {
+            long expiresAfterSec = Long.parseLong(matcher.group(2));
+            expiration = Instant.now().plusSeconds(expiresAfterSec);
+            userId = Integer.valueOf(matcher.group(3));
+            token = matcher.group(1);
+        } catch (NumberFormatException e) {
+            System.out.println("Wrong URL format: " + url);
+        }
+
+        return  new Session(userId, token, expiration);
     }
 }

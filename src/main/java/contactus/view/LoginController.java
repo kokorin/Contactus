@@ -1,31 +1,26 @@
 package contactus.view;
 
-import com.vk.api.sdk.client.actors.UserActor;
 import contactus.core.Session;
+import contactus.event.EventDispatcher;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.layout.Pane;
 import javafx.scene.web.WebView;
 
-import java.time.Instant;
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class LoginController {
+    private final EventDispatcher eventDispatcher;
     @FXML
     protected Pane rootPane;
     @FXML
     protected WebView webView;
 
-    private final Session session;
-
     private static final String API_VERSION = "5.45";
-    private static final Pattern AUTH_URL_PATTERN = Pattern.compile("^[^#]+#access_token=(.+)&expires_in=(.*)&user_id=(.*)$");
 
-    public LoginController(Session session) {
-        this.session = session;
+    public LoginController(EventDispatcher eventDispatcher) {
+        this.eventDispatcher = eventDispatcher;
     }
 
     @FXML
@@ -53,30 +48,8 @@ public class LoginController {
 
         @Override
         public void changed(ObservableValue<? extends String> observable, String oldUrl, String url) {
-            if (url == null) {
-                return;
-            }
-
-            Matcher matcher = AUTH_URL_PATTERN.matcher(url);
-            if (!matcher.find()) {
-                return;
-            }
-
-            String token = null;
-            int userId = 0;
-            Instant expiration = null;
-
-            try {
-                long expiresAfterSec = Long.parseLong(matcher.group(2));
-                expiration = Instant.now().plusSeconds(expiresAfterSec);
-                userId = Integer.parseInt(matcher.group(3));
-                token = matcher.group(1);
-            } catch (NumberFormatException e) {
-                System.out.println("Wrong URL format: " + url);
-            }
-
-            UserActor actor = new UserActor(userId, token);
-            session.update(actor, expiration);
+            Session session = Session.parseUrl(url);
+            eventDispatcher.dispatchEvent(session);
         }
     }
 

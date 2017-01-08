@@ -1,7 +1,10 @@
 package contactus.repository;
 
-import com.vk.api.sdk.objects.messages.Message;
+import contactus.model.Message;
+
+import java.util.List;
 
 public interface MessageRepository extends Repository<Message>{
     int maxId();
+    List<Message> loadAll(Integer fromId);
 }

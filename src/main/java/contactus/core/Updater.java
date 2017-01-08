@@ -8,12 +8,17 @@ import com.vk.api.sdk.objects.friends.FriendsList;
 import com.vk.api.sdk.objects.friends.UserXtrLists;
 import com.vk.api.sdk.objects.friends.responses.GetFieldsResponse;
 import com.vk.api.sdk.objects.friends.responses.GetListsResponse;
+import com.vk.api.sdk.objects.messages.LongpollMessages;
 import com.vk.api.sdk.objects.messages.LongpollParams;
-import com.vk.api.sdk.objects.messages.Message;
 import com.vk.api.sdk.objects.messages.responses.GetLongPollHistoryResponse;
+import com.vk.api.sdk.objects.updates.Update;
+import com.vk.api.sdk.objects.updates.responses.LongPollingUpdatesResponse;
 import com.vk.api.sdk.objects.users.User;
 import com.vk.api.sdk.queries.users.UserField;
 import contactus.event.EventDispatcher;
+
+import java.util.Collections;
+import java.util.Optional;
 
 public class Updater implements Runnable {
     private final UserActor actor;
@@ -35,27 +40,51 @@ public class Updater implements Runnable {
         try {
             GetListsResponse listsResponse = client.friends().getLists(actor).execute();
             for (FriendsList friendsList : listsResponse.getItems()) {
-                eventDispatcher.dispatchEvent(friendsList);
+                eventDispatcher.dispatchEvent(Converter.convertFriendsList(friendsList));
             }
 
             GetFieldsResponse friendsResponse = client.friends().get(actor, UserField.NICKNAME, UserField.PHOTO_50).execute();
             for (UserXtrLists user : friendsResponse.getItems()) {
-                eventDispatcher.dispatchEvent(user);
+                eventDispatcher.dispatchEvent(Converter.convertUserXtrLists(user));
             }
 
-            LongpollParams params = client.messages().getLongPollServer(actor).needPts(true).execute();
-
-            GetLongPollHistoryResponse historyResponse = client.messages().getLongPollHistory(actor)
-                    .maxMsgId(maxSeenMessageId)
-                    .ts(params.getTs())
-                    //.pts(params.getPts())
+            LongpollParams params = client.messages().getLongPollServer(actor)
+                    .needPts(true)
                     .execute();
-            for (Message message : historyResponse.getMessages().getMessages()) {
-                eventDispatcher.dispatchEvent(message);
+
+            int pts = 1;
+            while (params.getPts() > pts && !stopped) {
+                GetLongPollHistoryResponse historyResponse = client.messages().getLongPollHistory(actor)
+                        .pts(pts)
+                        .execute();
+                pts = historyResponse.getNewPts();
+
+                Optional.ofNullable(historyResponse)
+                        .map(GetLongPollHistoryResponse::getMessages)
+                        .map(LongpollMessages::getMessages)
+                        .orElse(Collections.emptyList())
+                        .stream()
+                        .map(Converter::convertMessage)
+                        .forEach(eventDispatcher::dispatchEvent);
+
+                for (User user : historyResponse.getProfiles()) {
+                    eventDispatcher.dispatchEvent(Converter.convertUser(user));
+                }
             }
 
-            for (User user : historyResponse.getProfiles()) {
-                eventDispatcher.dispatchEvent(user);
+            int ts = params.getTs();
+            while (!stopped) {
+                LongPollingUpdatesResponse updatesResponse = client.messages().longPollingUpdates()
+                        .server(params.getServer())
+                        .key(params.getKey())
+                        .waitTime(5)
+                        .ts(ts)
+                        .execute();
+                ts = updatesResponse.getTs();
+
+                for (Update update : updatesResponse.getUpdates()) {
+                    eventDispatcher.dispatchEvent(update);
+                }
             }
         } catch (ApiException | ClientException e) {
             e.printStackTrace();
@@ -65,6 +94,7 @@ public class Updater implements Runnable {
     public void stop() {
         stopped = true;
     }
+
 
     public static Builder builder() {
         return new Builder();

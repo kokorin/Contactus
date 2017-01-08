@@ -1,6 +1,6 @@
 package contactus.repository;
 
 public interface RepositoryFactory {
-    UserRepository openUserRepository();
+    ContactRepository openUserRepository();
     MessageRepository openMessageRepository();
 }
