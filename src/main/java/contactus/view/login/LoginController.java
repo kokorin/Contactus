@@ -1,4 +1,4 @@
-package contactus.view;
+package contactus.view.login;
 
 import contactus.core.Session;
 import contactus.event.EventDispatcher;

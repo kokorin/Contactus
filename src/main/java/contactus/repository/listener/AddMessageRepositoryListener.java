@@ -1,14 +1,15 @@
-package contactus.event;
+package contactus.repository.listener;
 
 import com.vk.api.sdk.objects.updates.AddMessage;
 import contactus.core.Converter;
+import contactus.event.EventListener;
 import contactus.model.Message;
 import contactus.repository.MessageRepository;
 
-public class AddMessageListener implements EventListener<AddMessage>{
+public class AddMessageRepositoryListener implements EventListener<AddMessage> {
     private final MessageRepository repository;
 
-    public AddMessageListener(MessageRepository repository) {
+    public AddMessageRepositoryListener(MessageRepository repository) {
         this.repository = repository;
     }
 

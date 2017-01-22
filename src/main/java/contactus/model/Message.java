@@ -17,7 +17,7 @@ public class Message {
     private boolean important;
     private boolean deleted;
     //private List<Message> fwdMessages;
-    private boolean readState;
+    private boolean unread;
     private String title;
     private String body;
     //private List<MessageAttachment> attachments;

@@ -4,11 +4,11 @@ import contactus.model.Contact;
 import contactus.model.ContactGroup;
 import contactus.repository.ContactRepository;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 class InMemoryContactRepository extends InMemoryRepository<Contact> implements ContactRepository {
+    private final Map<Integer, ContactGroup> groups = new HashMap<>();
+
     @Override
     public List<Contact> loadAll() {
         List<Contact> result = new ArrayList<>(getData().values());
@@ -19,12 +19,17 @@ class InMemoryContactRepository extends InMemoryRepository<Contact> implements C
 
     @Override
     public void saveContactGroup(ContactGroup contactGroup) {
-
+        groups.put(contactGroup.getId(), contactGroup);
     }
 
     @Override
-    public ContactGroup loadContactGroup(int id) {
-        return null;
+    public ContactGroup loadGroup(int id) {
+        return groups.get(id);
+    }
+
+    @Override
+    public List<ContactGroup> loadGroups() {
+        return new ArrayList<>(groups.values());
     }
 
     @Override

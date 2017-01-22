@@ -1,0 +1,6 @@
+<?language javascript?>
+<?import javafx.scene.layout.BorderPane?>
+<BorderPane fx:id="rootPane" xmlns:fx="http://www.w3.org/1999/xhtml" fx:controller="contactus.view.main.MainController"
+            prefWidth="640" prefHeight="480">
+
+</BorderPane>

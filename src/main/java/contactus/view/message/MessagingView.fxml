@@ -1,0 +1,18 @@
+<?language javascript?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<BorderPane fx:id="root" xmlns:fx="http://www.w3.org/1999/xhtml" fx:controller="contactus.view.message.MessagingController"
+            prefWidth="200" prefHeight="450">
+    <center>
+        <ListView fx:id="messageListView"/>
+    </center>
+    <bottom>
+        <HBox>
+            <TextArea fx:id="textArea" prefHeight="100"/>
+            <Button fx:id="sendButton" text="Send" prefWidth="100" prefHeight="100"/>
+        </HBox>
+    </bottom>
+</BorderPane>

@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface ContactRepository extends Repository<Contact> {
     List<Contact> loadAll();
+
     void saveContactGroup(ContactGroup contactGroup);
-    ContactGroup loadContactGroup(int id);
+    ContactGroup loadGroup(int id);
+    List<ContactGroup> loadGroups();
 }

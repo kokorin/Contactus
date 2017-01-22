@@ -1,0 +1,18 @@
+<?language javascript?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<BorderPane xmlns:fx="http://www.w3.org/1999/xhtml" fx:controller="contactus.view.contact.ContactListController"
+            prefWidth="200" prefHeight="450">
+    <top>
+        <VBox>
+            <CheckBox fx:id="onlyFriendsCheck" text="Friends" prefWidth="Infinity"/>
+            <ComboBox fx:id="groupSelector" prefWidth="Infinity"/>
+        </VBox>
+    </top>
+    <center>
+        <ListView fx:id="contactListView" styleClass="contact-list-view"/>
+    </center>
+</BorderPane>

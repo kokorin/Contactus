@@ -1,12 +1,13 @@
-package contactus.event;
+package contactus.repository.listener;
 
+import contactus.event.EventListener;
 import contactus.model.ContactGroup;
 import contactus.repository.ContactRepository;
 
-public class ContactGroupListener implements EventListener<ContactGroup>{
+public class ContactGroupRepositoryListener implements EventListener<ContactGroup> {
     private final ContactRepository repository;
 
-    public ContactGroupListener(ContactRepository repository) {
+    public ContactGroupRepositoryListener(ContactRepository repository) {
         this.repository = repository;
     }
 

@@ -3,6 +3,8 @@ package contactus.model;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class Contact {
@@ -16,10 +18,19 @@ public class Contact {
     private String photo50;
     private String photo100;
     private Integer online;
+    private List<Integer> groups;
+
 
     public enum Sex {
         MALE,
         FEMALE,
         UNKNOWN
+    }
+
+    public enum State {
+        NOT_CONFIRMED,
+        INVITED,
+        WAITING_FOR_ACCEPT,
+        CONFIRMED
     }
 }

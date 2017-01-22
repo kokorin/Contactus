@@ -1,9 +1,12 @@
-package contactus.event;
+package contactus.core;
 
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.objects.updates.AddMessage;
-import contactus.core.Session;
-import contactus.core.Updater;
+import contactus.data.Data;
+import contactus.data.listener.ContactDataListener;
+import contactus.data.listener.ContactGroupDataListener;
+import contactus.event.EventDispatcher;
+import contactus.event.EventListener;
 import contactus.model.Contact;
 import contactus.model.ContactGroup;
 import contactus.model.Message;
@@ -12,9 +15,15 @@ import contactus.repository.ContactRepository;
 import contactus.repository.MessageRepository;
 import contactus.repository.RepositoryFactory;
 import contactus.repository.inmem.InMemoryRepositoryFactory;
-import contactus.view.LoginController;
-import contactus.view.MainController;
+import contactus.repository.listener.AddMessageRepositoryListener;
+import contactus.repository.listener.ContactGroupRepositoryListener;
+import contactus.repository.listener.ContactRepositoryListener;
+import contactus.repository.listener.MessageRepositoryListener;
 import contactus.view.View;
+import contactus.view.contact.ContactListController;
+import contactus.view.login.LoginController;
+import contactus.view.main.MainController;
+import contactus.view.message.MessagingController;
 import javafx.stage.Stage;
 import org.picocontainer.DefaultPicoContainer;
 import org.picocontainer.PicoContainer;
@@ -29,10 +38,12 @@ public class SessionListener implements EventListener<Session> {
     private MessageRepository messageRepository;
     private ContactRepository contactRepository;
     private Updater updater;
-    private ContactGroupListener contactGroupListener;
-    private ContactListener contactListener;
-    private MessageListener messageListener;
-    private AddMessageListener addMessageListener;
+    private ContactGroupRepositoryListener contactGroupListener;
+    private ContactRepositoryListener contactListener;
+    private MessageRepositoryListener messageListener;
+    private AddMessageRepositoryListener addMessageListener;
+    private ContactDataListener contactDataListener;
+    private ContactGroupDataListener contactGroupDataListener;
 
     private Session session;
 
@@ -74,22 +85,32 @@ public class SessionListener implements EventListener<Session> {
         thread.setName("Updater " + session.getUserId());
         thread.start();
 
-        contactGroupListener = new ContactGroupListener(contactRepository);
-        contactListener = new ContactListener(contactRepository);
-        messageListener = new MessageListener(messageRepository);
-        addMessageListener = new AddMessageListener(messageRepository);
+        Data data = new Data();
+        contactDataListener = new ContactDataListener(data);
+        contactGroupDataListener = new ContactGroupDataListener(data);
+
+        contactGroupListener = new ContactGroupRepositoryListener(contactRepository);
+        contactListener = new ContactRepositoryListener(contactRepository);
+        messageListener = new MessageRepositoryListener(messageRepository);
+        addMessageListener = new AddMessageRepositoryListener(messageRepository);
 
         eventDispatcher.addListener(ContactGroup.class, contactGroupListener);
         eventDispatcher.addListener(Contact.class, contactListener);
         eventDispatcher.addListener(Message.class, messageListener);
         eventDispatcher.addListener(AddMessage.class, addMessageListener);
 
+        eventDispatcher.addListener(Contact.class, contactDataListener);
+        eventDispatcher.addListener(ContactGroup.class, contactGroupDataListener);
+
         PicoContainer authContainer = new DefaultPicoContainer(parentContainer)
                 .addComponent(View.class)
                 .addAdapter(new ContainerAdapter())
                 .addComponent(MainController.class)
+                .addComponent(ContactListController.class)
+                .addComponent(MessagingController.class)
                 .addComponent(messageRepository)
-                .addComponent(contactRepository);
+                .addComponent(contactRepository)
+                .addComponent(data);
 
         MainController controller = authContainer.getComponent(View.class)
                 .forController(MainController.class)
@@ -113,6 +134,8 @@ public class SessionListener implements EventListener<Session> {
         eventDispatcher.removeListener(Contact.class, contactListener);
         eventDispatcher.removeListener(Message.class, messageListener);
         eventDispatcher.removeListener(AddMessage.class, addMessageListener);
+        eventDispatcher.removeListener(Contact.class, contactDataListener);
+        eventDispatcher.removeListener(ContactGroup.class, contactGroupDataListener);
 
         closeSilently(messageRepository);
         closeSilently(contactRepository);
