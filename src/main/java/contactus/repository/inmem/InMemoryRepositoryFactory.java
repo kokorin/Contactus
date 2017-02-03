@@ -5,13 +5,7 @@ import contactus.repository.MessageRepository;
 import contactus.repository.RepositoryFactory;
 
 public class InMemoryRepositoryFactory implements RepositoryFactory {
-    private final int userId;
-
-    public InMemoryRepositoryFactory(int userId) {
-        this.userId = userId;
-    }
-
-    public ContactRepository openUserRepository() {
+    public ContactRepository openContactRepository() {
         return new InMemoryContactRepository();
     }
 

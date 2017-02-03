@@ -51,6 +51,10 @@ public class View {
                     @SuppressWarnings("unchecked")
                     T controller = container.getComponent(controllerClass);
 
+                    if (controller == null) {
+                        throw new RuntimeException("Controller " + controllerClass + " not found in context " + container);
+                    }
+
                     return controller;
                 });
 

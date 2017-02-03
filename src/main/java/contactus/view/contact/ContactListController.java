@@ -1,7 +1,7 @@
 package contactus.view.contact;
 
 import contactus.data.ContactBinding;
-import contactus.data.Data;
+import contactus.data.ContactListData;
 import contactus.model.Contact;
 import contactus.model.ContactGroup;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -24,7 +24,7 @@ public class ContactListController {
     @FXML
     protected ListView<ContactBinding> contactListView;
 
-    private final Data contactDataHolder;
+    private final ContactListData contactDataHolder;
     private final ReadOnlyObjectWrapper<Contact> selectedContact = new ReadOnlyObjectWrapper<>();
 
     private static final ContactGroup EVERYONE;
@@ -33,7 +33,7 @@ public class ContactListController {
         EVERYONE.setName("Everyone");
     }
 
-    public ContactListController(Data contactDataHolder) {
+    public ContactListController(ContactListData contactDataHolder) {
         this.contactDataHolder = contactDataHolder;
     }
 

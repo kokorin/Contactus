@@ -1,11 +1,14 @@
 package contactus.core;
 
+import com.google.gson.annotations.JsonAdapter;
 import com.vk.api.sdk.client.actors.UserActor;
+import contactus.gson.SessionJsonAdapter;
 
 import java.time.Instant;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@JsonAdapter(SessionJsonAdapter.class)
 public class Session {
     private final Integer userId;
     private final String accessToken;

@@ -4,9 +4,7 @@ import contactus.model.Message;
 import contactus.repository.MessageRepository;
 
 import java.time.Instant;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 class InMemoryMessageRepository extends InMemoryRepository<Message> implements MessageRepository {
@@ -47,5 +45,32 @@ class InMemoryMessageRepository extends InMemoryRepository<Message> implements M
                 .filter(m -> Objects.equals(m.getUserId(), userId))
                 .reduce((l, r) -> l.getDate().isAfter(r.getDate()) ? l : r)
                 .orElse(null);
+    }
+
+    @Override
+    public List<Message> loadLast() {
+        Map<Integer, Integer> lastMsgId = new HashMap<>();
+        for (Message message : getData().values()) {
+            Integer lastId = lastMsgId.get(message.getFromId());
+            if (lastId == null || lastId < message.getId()) {
+                lastMsgId.put(message.getFromId(), message.getId());
+            }
+        }
+
+        return lastMsgId.values().stream().map(this::load).collect(Collectors.toList());
+    }
+
+    @Override
+    public Map<Integer, Integer> loadUnreadCount() {
+        Map<Integer, Integer> result = new HashMap<>();
+        for (Message message : getData().values()) {
+            if (!message.isUnread()) {
+                continue;
+            }
+            Integer count = result.getOrDefault(message.getFromId(), 0);
+            result.put(message.getFromId(), count + 1);
+        }
+
+        return result;
     }
 }

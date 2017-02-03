@@ -1,4 +1,4 @@
-package contactus.core;
+package contactus.event;
 
 import com.vk.api.sdk.objects.friends.FriendsList;
 import com.vk.api.sdk.objects.friends.UserXtrLists;
@@ -6,23 +6,35 @@ import com.vk.api.sdk.objects.messages.Message;
 import com.vk.api.sdk.objects.users.User;
 import contactus.model.Contact;
 import contactus.model.ContactGroup;
+import contactus.model.Message.Direction;
 
 import java.time.Instant;
 
-public class Converter {
-    private Converter(){}
+public class Events {
+    private Events(){}
 
-    public static ContactGroup convertFriendsList(FriendsList friendsList) {
+    public static ContactGroupEvent convertFriendsList(FriendsList friendsList) {
         ContactGroup result = new ContactGroup();
-
         result.setId(friendsList.getId());
         result.setName(friendsList.getName());
 
-        return result;
+        return new ContactGroupEvent(ContactGroupEvent.Type.ADD, result);
     }
 
 
-    public static Contact convertUser(User user) {
+    public static ContactEvent convertUser(User user) {
+        Contact result = toContact(user);
+
+        return new ContactEvent(ContactEvent.Type.ADD, result);
+    }
+
+    public static ContactEvent convertUserXtrLists(UserXtrLists user) {
+        Contact result = toContact(user);
+
+        return new ContactEvent(ContactEvent.Type.ADD, result);
+    }
+
+    private static Contact toContact(User user) {
         Contact result = new Contact();
 
         result.setId(user.getId());
@@ -33,13 +45,7 @@ public class Converter {
         return result;
     }
 
-    public static Contact convertUserXtrLists(UserXtrLists user) {
-        Contact result = convertUser((User)user);
-
-        return result;
-    }
-
-    public static contactus.model.Message convertMessage(Message message) {
+    public static MessageEvent convertMessage(Message message) {
         contactus.model.Message result = new contactus.model.Message();
 
         result.setId(message.getId());
@@ -47,7 +53,8 @@ public class Converter {
         result.setBody(message.getBody());
         result.setUserId(message.getUserId());
         result.setDate(Instant.ofEpochMilli(message.getDate()));
+        result.setDirection(message.isOut() ? Direction.OUTPUT : Direction.INPUT);
 
-        return result;
+        return new MessageEvent(MessageEvent.Type.RECEIVE, result);
     }
 }

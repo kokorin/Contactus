@@ -1,7 +1,10 @@
 package contactus.view.login;
 
+import com.google.common.eventbus.EventBus;
+import com.google.gson.Gson;
 import contactus.core.Session;
-import contactus.event.EventDispatcher;
+import contactus.event.SessionEvent;
+import contactus.event.SessionEvent.Type;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
@@ -11,7 +14,9 @@ import javafx.scene.web.WebView;
 import java.util.Objects;
 
 public class LoginController {
-    private final EventDispatcher eventDispatcher;
+    private final EventBus eventBus;
+    private final Gson gson;
+
     @FXML
     protected Pane rootPane;
     @FXML
@@ -19,8 +24,9 @@ public class LoginController {
 
     private static final String API_VERSION = "5.45";
 
-    public LoginController(EventDispatcher eventDispatcher) {
-        this.eventDispatcher = eventDispatcher;
+    public LoginController(EventBus eventBus, Gson gson) {
+        this.eventBus = eventBus;
+        this.gson = gson;
     }
 
     @FXML
@@ -49,7 +55,10 @@ public class LoginController {
         @Override
         public void changed(ObservableValue<? extends String> observable, String oldUrl, String url) {
             Session session = Session.parseUrl(url);
-            eventDispatcher.dispatchEvent(session);
+            if (session.isAuthorized()) {
+                System.out.println("-DSESSION=" + gson.toJson(session));
+                eventBus.post(new SessionEvent(Type.LOGIN, session));
+            }
         }
     }
 

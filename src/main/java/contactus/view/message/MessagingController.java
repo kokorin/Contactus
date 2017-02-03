@@ -1,13 +1,26 @@
 package contactus.view.message;
 
+import com.google.common.eventbus.EventBus;
+import contactus.data.MessageListData;
+import contactus.event.MessageEvent;
+import contactus.model.Contact;
 import contactus.model.Message;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
+import javafx.scene.input.KeyCode;
 
 
 public class MessagingController {
+    private final EventBus eventBus;
+    private final MessageListData messageListData;
+    private final ObjectProperty<Contact> contact = new SimpleObjectProperty<>();
+
     @FXML
     protected ListView<Message> messageListView;
     @FXML
@@ -15,23 +28,9 @@ public class MessagingController {
     @FXML
     protected Button sendButton;
 
-   /* private final Data data;
-    private final LoadMessageHistoryService loadMessageHistoryService;
-    private final SendMessageService sendMessageService;
-
-    private final ObjectProperty<Contact> contact = new SimpleObjectProperty<>();
-    private final ListChangeListener<? super Message> scrollDownListener = c -> {
-        ObservableList<Message> messages = messageListView.getItems();
-        if (messages != null && !messages.isEmpty()) {
-            messageListView.scrollTo(messages.size() - 1);
-        }
-    };
-
-    @Autowired
-    public MessagingController(Data data, LoadMessageHistoryService loadMessageHistoryService, SendMessageService sendMessageService) {
-        this.data = data;
-        this.loadMessageHistoryService = loadMessageHistoryService;
-        this.sendMessageService = sendMessageService;
+    public MessagingController(EventBus eventBus, MessageListData messageListData) {
+        this.eventBus = eventBus;
+        this.messageListData = messageListData;
     }
 
     public Contact getContact() {
@@ -46,6 +45,13 @@ public class MessagingController {
         this.contact.set(contact);
     }
 
+    private final ListChangeListener<? super Message> scrollDownListener = c -> {
+        ObservableList<Message> messages = messageListView.getItems();
+        if (messages != null && !messages.isEmpty()) {
+            messageListView.scrollTo(messages.size() - 1);
+        }
+    };
+
     @FXML
     protected void initialize() {
         assert textArea != null;
@@ -53,28 +59,12 @@ public class MessagingController {
         assert messageListView != null;
 
         messageListView.setCellFactory(list -> new MessageListCell());
+        ObservableList<Message> messages = messageListData.getMessages();
+        messageListView.setItems(messages);
+        messages.addListener(scrollDownListener);
 
         contact.addListener((observable, oldValue, newValue) -> {
-            if (newValue == null) {
-                messageListView.setItems(FXCollections.emptyObservableList());
-                return;
-            }
-
-            ObservableList<Message> messages = messageListView.getItems();
-            if (messages != null) {
-                messages.removeListener(scrollDownListener);
-            }
-            messages = data.getMessages(newValue.getUser().getId());
-            messageListView.setItems(messages);
-            messages.addListener(scrollDownListener);
-
-            //TODO save handling of different periods and buttons to load messages for selected period
-            //currently only one-time load is supported
-            if (messages.size() < 2) {
-                loadMessageHistoryService.setUserId(newValue.getUser().getId());
-                loadMessageHistoryService.restart();
-            }
-            messageListView.setItems(messages);
+            messageListData.setContactId(newValue == null ? null : newValue.getId());
         });
 
         textArea.setOnKeyPressed(event -> {
@@ -83,11 +73,8 @@ public class MessagingController {
                 sendMessage();
             }
         });
-        sendButton.disableProperty().bind(textArea.textProperty().isEmpty().or(sendMessageService.runningProperty()));
 
         sendButton.setOnAction(event -> sendMessage());
-
-        sendMessageService.setOnSucceeded(event -> textArea.setText(""));
     }
 
     private void sendMessage() {
@@ -95,7 +82,15 @@ public class MessagingController {
         if (text.isEmpty()) {
             return;
         }
-        sendMessageService.setMessage(getContact().getUser().getId(), text);
-        sendMessageService.restart();
-    }*/
+
+        Message message = new Message();
+        message.setFromId(getContact().getId());
+        message.setBody(text);
+
+        MessageEvent event = new MessageEvent(MessageEvent.Type.SEND, message);
+        eventBus.post(event);
+
+        //TODO wait for send completion
+        textArea.setText("");
+    }
 }
