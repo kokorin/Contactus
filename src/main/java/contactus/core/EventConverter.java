@@ -90,7 +90,7 @@ public class EventConverter {
                 .title(message.getTitle())
                 .body(message.getBody())
                 .contactId(message.getUserId())
-                .date(Instant.ofEpochMilli(message.getDate()))
+                .date(Instant.ofEpochSecond(message.getDate()))
                 .direction(message.isOut() ? Direction.OUTPUT : Direction.INPUT)
                 .build();
 
