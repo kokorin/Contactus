@@ -1,25 +1,27 @@
 package contactus.model;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.Instant;
 
 @Getter
-@Setter
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder
 public class Message {
-    private Integer id;
-    private Instant date;
-    private Direction direction;
-    private Integer userId;
-    private Integer fromId;
-    private Integer randomId;
-    private boolean important;
-    private boolean deleted;
-    //private List<Message> fwdMessages;
-    private boolean unread;
-    private String title;
-    private String body;
+    private final Integer id;
+    @NonNull
+    private final Integer contactId;
+    private final Integer randomId;
+    @NonNull
+    private final Instant date;
+    @NonNull
+    private final Direction direction;
+    private final boolean important;
+    private final boolean deleted;
+    //private final List<Message> fwdMessages;
+    private final boolean unread;
+    private final String title;
+    private final String body;
     //private List<MessageAttachment> attachments;
     //private Integer chatId;
     //private List<Integer> chatActive;

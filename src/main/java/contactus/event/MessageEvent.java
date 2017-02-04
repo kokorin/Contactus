@@ -11,7 +11,8 @@ public class MessageEvent {
     private final Message message;
 
     public enum Type {
-        SEND,
+        SENDING,
+        SENT,
         RECEIVE,
         UPDATE,
         REMOVE

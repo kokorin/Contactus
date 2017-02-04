@@ -21,7 +21,7 @@ class InMemoryMessageRepository extends InMemoryRepository<Message> implements M
     @Override
     public List<Message> loadAll(Integer userId) {
         List<Message> result = getData().values().stream()
-                .filter(m -> Objects.equals(m.getUserId(), userId))
+                .filter(m -> Objects.equals(m.getContactId(), userId))
                 .collect(Collectors.toList());
         result.sort(Comparator.comparing(Message::getDate).reversed());
 
@@ -29,9 +29,9 @@ class InMemoryMessageRepository extends InMemoryRepository<Message> implements M
     }
 
     @Override
-    public List<Message> loadAll(Integer userId, Instant since) {
+    public List<Message> loadAll(Integer contactId, Instant since) {
         List<Message> result = getData().values().stream()
-                .filter(m -> Objects.equals(m.getUserId(), userId))
+                .filter(m -> Objects.equals(m.getContactId(), contactId))
                 .filter(m -> m.getDate().isAfter(since))
                 .collect(Collectors.toList());
         result.sort(Comparator.comparing(Message::getDate).reversed());
@@ -40,9 +40,9 @@ class InMemoryMessageRepository extends InMemoryRepository<Message> implements M
     }
 
     @Override
-    public Message loadLast(Integer userId) {
+    public Message loadLast(Integer contactId) {
         return getData().values().stream()
-                .filter(m -> Objects.equals(m.getUserId(), userId))
+                .filter(m -> Objects.equals(m.getContactId(), contactId))
                 .reduce((l, r) -> l.getDate().isAfter(r.getDate()) ? l : r)
                 .orElse(null);
     }
@@ -51,9 +51,9 @@ class InMemoryMessageRepository extends InMemoryRepository<Message> implements M
     public List<Message> loadLast() {
         Map<Integer, Integer> lastMsgId = new HashMap<>();
         for (Message message : getData().values()) {
-            Integer lastId = lastMsgId.get(message.getFromId());
+            Integer lastId = lastMsgId.get(message.getContactId());
             if (lastId == null || lastId < message.getId()) {
-                lastMsgId.put(message.getFromId(), message.getId());
+                lastMsgId.put(message.getContactId(), message.getId());
             }
         }
 
@@ -67,8 +67,8 @@ class InMemoryMessageRepository extends InMemoryRepository<Message> implements M
             if (!message.isUnread()) {
                 continue;
             }
-            Integer count = result.getOrDefault(message.getFromId(), 0);
-            result.put(message.getFromId(), count + 1);
+            Integer count = result.getOrDefault(message.getContactId(), 0);
+            result.put(message.getContactId(), count + 1);
         }
 
         return result;

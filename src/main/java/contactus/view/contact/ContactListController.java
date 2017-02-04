@@ -4,6 +4,7 @@ import contactus.data.ContactBinding;
 import contactus.data.ContactListData;
 import contactus.model.Contact;
 import contactus.model.ContactGroup;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
@@ -24,7 +25,7 @@ public class ContactListController {
     @FXML
     protected ListView<ContactBinding> contactListView;
 
-    private final ContactListData contactDataHolder;
+    private final ContactListData contactListData;
     private final ReadOnlyObjectWrapper<Contact> selectedContact = new ReadOnlyObjectWrapper<>();
 
     private static final ContactGroup EVERYONE;
@@ -33,8 +34,8 @@ public class ContactListController {
         EVERYONE.setName("Everyone");
     }
 
-    public ContactListController(ContactListData contactDataHolder) {
-        this.contactDataHolder = contactDataHolder;
+    public ContactListController(ContactListData contactListData) {
+        this.contactListData = contactListData;
     }
 
     @FXML
@@ -42,10 +43,12 @@ public class ContactListController {
         Objects.requireNonNull(groupSelector);
         Objects.requireNonNull(contactListView);
 
-        ObservableList<ContactGroup> groups = FXCollections.concat(
-                FXCollections.singletonObservableList(EVERYONE),
-                contactDataHolder.getContactGroups()
-        );
+        //TODO a little bit of hack here to concat ObservableList
+        ObservableList<ContactGroup> groups = FXCollections.observableArrayList();
+        groups.add(EVERYONE);
+        ObservableList<ContactGroup> realGroups = contactListData.getContactGroups();
+        Bindings.bindContent(groups.subList(1,1), realGroups);
+
 
         groupSelector.setItems(groups);
         groupSelector.getSelectionModel().select(EVERYONE);
@@ -62,7 +65,7 @@ public class ContactListController {
 
     private void updateContacts() {
         ContactGroup group = groupSelector.getValue();
-        ObservableList<ContactBinding> contacts = contactDataHolder.getContactBindings();
+        ObservableList<ContactBinding> contacts = contactListData.getContacts();
 
         if (group != null && group != EVERYONE) {
             contacts = contacts.filtered(contactData -> contactData.getContact().getGroups().contains(group.getId()));

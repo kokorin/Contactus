@@ -17,6 +17,7 @@ import javafx.collections.ObservableList;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ContactListData {
@@ -34,7 +35,7 @@ public class ContactListData {
         this.messageRepository = messageRepository;
     }
 
-    public ObservableList<ContactBinding> getContactBindings() {
+    public ObservableList<ContactBinding> getContacts() {
         return FXCollections.unmodifiableObservableList(contactList);
     }
 
@@ -52,10 +53,15 @@ public class ContactListData {
             ContactBinding binding = getContactBinding(contact.getId());
             Platform.runLater(() -> binding.setContact(contact));
         }
+
+        List<ContactGroup> loadedGroups = contactRepository.loadGroups();
+        Platform.runLater(() -> groupList.setAll(loadedGroups));
+
         for (Message message : messageRepository.loadLast()) {
-            ContactBinding binding = getContactBinding(message.getFromId());
+            ContactBinding binding = getContactBinding(message.getContactId());
             Platform.runLater(() -> binding.setLastMessage(message));
         }
+
         for (Map.Entry<Integer, Integer> entry : messageRepository.loadUnreadCount().entrySet()) {
             ContactBinding binding = getContactBinding(entry.getKey());
             Platform.runLater(() -> binding.setUnreadCount(entry.getValue()));
@@ -80,7 +86,7 @@ public class ContactListData {
     @Subscribe
     public void onMessageEvent(MessageEvent messageEvent) {
         Message message = messageEvent.getMessage();
-        ContactBinding binding = getContactBinding(message.getFromId());
+        ContactBinding binding = getContactBinding(message.getContactId());
         Platform.runLater(() -> binding.setLastMessage(message));
         //TODO update unread count
     }
@@ -88,8 +94,8 @@ public class ContactListData {
     @Subscribe
     public void onContactGroupEvent(ContactGroupEvent contactGroupEvent) {
         ContactGroup group = contactGroupEvent.getContactGroup();
-        int index = groupList.indexOf(group);
         Platform.runLater(() -> {
+            int index = groupList.indexOf(group);
             if (index != -1) {
                 groupList.set(index, group);
             } else {

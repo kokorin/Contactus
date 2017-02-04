@@ -42,7 +42,7 @@ public class RepositorySaver {
 
     @Subscribe
     public void onMessageEvent(MessageEvent event) {
-        if (event.getType() == MessageEvent.Type.SEND) {
+        if (event.getType() == MessageEvent.Type.SENDING) {
             return;
         }
 

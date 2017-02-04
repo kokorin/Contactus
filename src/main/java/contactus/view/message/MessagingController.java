@@ -15,6 +15,9 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyCode;
 
+import java.time.Instant;
+import java.util.concurrent.ThreadLocalRandom;
+
 
 public class MessagingController {
     private final EventBus eventBus;
@@ -83,11 +86,15 @@ public class MessagingController {
             return;
         }
 
-        Message message = new Message();
-        message.setFromId(getContact().getId());
-        message.setBody(text);
+        Message message = Message.builder()
+                .contactId(getContact().getId())
+                .direction(Message.Direction.OUTPUT)
+                .date(Instant.now())
+                .body(text)
+                .randomId(ThreadLocalRandom.current().nextInt())
+                .build();
 
-        MessageEvent event = new MessageEvent(MessageEvent.Type.SEND, message);
+        MessageEvent event = new MessageEvent(MessageEvent.Type.SENDING, message);
         eventBus.post(event);
 
         //TODO wait for send completion

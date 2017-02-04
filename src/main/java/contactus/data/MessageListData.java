@@ -3,6 +3,7 @@ package contactus.data;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import contactus.event.MessageEvent;
+import contactus.event.MessageEvent.Type;
 import contactus.model.Message;
 import contactus.repository.MessageRepository;
 import javafx.application.Platform;
@@ -35,7 +36,7 @@ public class MessageListData {
     public ObservableList<Message> getMessages() {
         return FXCollections
                 .unmodifiableObservableList(messages)
-                .sorted(Comparator.comparing(Message::getId));
+                .sorted(Comparator.comparing(Message::getDate));
     }
 
     @PostConstruct
@@ -53,10 +54,59 @@ public class MessageListData {
     public void onMessageEvent(MessageEvent messageEvent) {
         Message message = messageEvent.getMessage();
 
-        if (contactId == null || !Objects.equals(message.getFromId(), contactId)) {
+        if (!Objects.equals(message.getContactId(), contactId)) {
             return;
         }
 
+        if (messageEvent.getType() == Type.UPDATE) {int index = -1;
+            //Looking for message with the same id
+            //TODO reverse loop?
+            for (int i = 0; i < messages.size(); ++i) {
+                Message m = messages.get(i);
+                if (m.getId() != null && m.getId().equals(message.getId())) {
+                    index = i;
+                    break;
+                }
+            }
+
+            if (index == -1) {
+                messages.add(message);
+            } else {
+                messages.set(index, message);
+            }
+        }
+
+        if (messageEvent.getType() == Type.SENT) {
+            Platform.runLater(() -> {
+                int index = -1;
+                //Looking for message with the same random ID and id (if present)
+                //TODO reverse loop?
+                for (int i = 0; i < messages.size(); ++i) {
+                    Message m = messages.get(i);
+                    if ((m.getId() == null || m.getId().equals(message.getId()))
+                            && m.getRandomId() != null
+                            && m.getRandomId().equals(message.getRandomId())
+                            ) {
+                        index = i;
+                        break;
+                    }
+                }
+
+                if (index == -1) {
+                    messages.add(message);
+                } else {
+                    messages.set(index, message);
+                }
+            });
+            return;
+        }
+
+        if (messageEvent.getType() == Type.REMOVE) {
+            Platform.runLater(() -> messages.removeIf(m -> Objects.equals(message.getId(), m.getId())));
+            return;
+        }
+
+        //RECEIVE OR SENDING
         Platform.runLater(() -> messages.add(message));
     }
 }

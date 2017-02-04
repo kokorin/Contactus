@@ -8,6 +8,8 @@ import com.google.gson.GsonBuilder;
 import com.sun.javafx.css.StyleManager;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
+import contactus.core.EventConverter;
+import contactus.core.Sender;
 import contactus.core.Session;
 import contactus.core.Updater;
 import contactus.data.ContactListData;
@@ -122,7 +124,9 @@ public class Contactus extends Application {
                 .addComponent(ContactListData.class)
                 .addComponent(MessageListData.class)
                 .addComponent(Updater.class)
+                .addComponent(EventConverter.class)
                 .addComponent(RepositorySaver.class)
+                .addComponent(Sender.class)
                 .addComponent(MainController.class)
                 .addComponent(ContactListController.class)
                 .addComponent(MessagingController.class)
@@ -131,6 +135,8 @@ public class Contactus extends Application {
         //TODO is it possible to enable autocreation of some components?
         authContainer.getComponent(Updater.class);
         authContainer.getComponent(RepositorySaver.class);
+        authContainer.getComponent(Sender.class);
+        authContainer.getComponent(EventConverter.class);
 
         authContainer.getComponent(View.class)
                 .forController(MainController.class)

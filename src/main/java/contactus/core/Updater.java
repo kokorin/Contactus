@@ -10,12 +10,12 @@ import com.vk.api.sdk.objects.friends.responses.GetFieldsResponse;
 import com.vk.api.sdk.objects.friends.responses.GetListsResponse;
 import com.vk.api.sdk.objects.messages.LongpollMessages;
 import com.vk.api.sdk.objects.messages.LongpollParams;
+import com.vk.api.sdk.objects.messages.Message;
 import com.vk.api.sdk.objects.messages.responses.GetLongPollHistoryResponse;
 import com.vk.api.sdk.objects.updates.Update;
 import com.vk.api.sdk.objects.updates.responses.LongPollingUpdatesResponse;
 import com.vk.api.sdk.objects.users.User;
 import com.vk.api.sdk.queries.users.UserField;
-import contactus.event.Events;
 import lombok.Setter;
 
 import javax.annotation.PostConstruct;
@@ -42,12 +42,12 @@ public class Updater implements Runnable {
         try {
             GetListsResponse listsResponse = client.friends().getLists(session.getActor()).execute();
             for (FriendsList friendsList : listsResponse.getItems()) {
-                eventBus.post(Events.convertFriendsList(friendsList));
+                eventBus.post(friendsList);
             }
 
             GetFieldsResponse friendsResponse = client.friends().get(session.getActor(), UserField.NICKNAME, UserField.PHOTO_50).execute();
             for (UserXtrLists user : friendsResponse.getItems()) {
-                eventBus.post(Events.convertUserXtrLists(user));
+                eventBus.post(user);
             }
 
             LongpollParams params = client.messages().getLongPollServer(session.getActor())
@@ -65,13 +65,12 @@ public class Updater implements Runnable {
                 Optional.ofNullable(historyResponse)
                         .map(GetLongPollHistoryResponse::getMessages)
                         .map(LongpollMessages::getMessages)
-                        .orElse(Collections.emptyList())
+                        .orElse(Collections.<Message>emptyList())
                         .stream()
-                        .map(Events::convertMessage)
                         .forEach(eventBus::post);
 
                 for (User user : historyResponse.getProfiles()) {
-                    eventBus.post(Events.convertUser(user));
+                    eventBus.post(user);
                 }
             }
 
