@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.util.Arrays;
 import java.util.List;
 
+//TODO support Contact.groups property
 class JdbcContactRepository extends JdbcRepository<Contact> implements ContactRepository {
 
     public JdbcContactRepository(Connection connection) {

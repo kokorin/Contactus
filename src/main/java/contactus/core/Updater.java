@@ -41,6 +41,7 @@ public class Updater implements Runnable {
         boolean friendsLoaded = false;
         int pts = messageRepository.loadLastPts();
 
+        //TODO pass multiple FriendLists, Users and Messages to EventBus at a time
         while (!stopped) {
             try {
                 if (!friendListsLoaded && !stopped) {
@@ -68,7 +69,8 @@ public class Updater implements Runnable {
                             .pts(pts)
                             .execute();
 
-                    //We have to publish Users before messages for DB consistency
+                    //TODO We have to publish Users before messages for DB consistency
+                    // but it's not reliable in case of async EventBus
                     for (User user : historyResponse.getProfiles()) {
                         eventBus.post(user);
                     }
