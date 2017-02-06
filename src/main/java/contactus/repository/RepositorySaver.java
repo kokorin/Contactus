@@ -5,20 +5,17 @@ import com.google.common.eventbus.Subscribe;
 import contactus.event.ContactEvent;
 import contactus.event.ContactGroupEvent;
 import contactus.event.MessageEvent;
+import lombok.AllArgsConstructor;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+@AllArgsConstructor
 public class RepositorySaver {
     private final EventBus eventBus;
     private final ContactRepository contactRepository;
+    private final ContactGroupRepository contactGroupRepository;
     private final MessageRepository messageRepository;
-
-    public RepositorySaver(EventBus eventBus, ContactRepository contactRepository, MessageRepository messageRepository) {
-        this.eventBus = eventBus;
-        this.contactRepository = contactRepository;
-        this.messageRepository = messageRepository;
-    }
 
     @PostConstruct
     public void postConstruct() {
@@ -37,7 +34,7 @@ public class RepositorySaver {
 
     @Subscribe
     public void onContactGroupEvent(ContactGroupEvent event) {
-        contactRepository.saveContactGroup(event.getContactGroup());
+        contactGroupRepository.save(event.getContactGroup());
     }
 
     @Subscribe

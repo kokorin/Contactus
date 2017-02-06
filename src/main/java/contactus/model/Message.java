@@ -34,6 +34,15 @@ public class Message {
 
     public enum Direction {
         INPUT,
-        OUTPUT
+        OUTPUT;
+
+        public static Direction parse(String value) {
+            for (Direction direction : Direction.values()) {
+                if (direction.name().equals(value)) {
+                    return direction;
+                }
+            }
+            return null;
+        }
     }
 }

@@ -41,9 +41,10 @@ public class EventConverter {
 
     @Subscribe
     public void convertFriendsList(FriendsList friendsList) {
-        ContactGroup result = new ContactGroup();
-        result.setId(friendsList.getId());
-        result.setName(friendsList.getName());
+        ContactGroup result = ContactGroup.builder()
+                .id(friendsList.getId())
+                .name(friendsList.getName())
+                .build();
 
         ContactGroupEvent event = new ContactGroupEvent(ContactGroupEvent.Type.ADD, result);
         eventBus.post(event);
@@ -87,9 +88,10 @@ public class EventConverter {
     public void convertMessage(Message message) {
         contactus.model.Message result = contactus.model.Message.builder()
                 .id(message.getId())
+                .randomId(message.getRandomId())
+                .contactId(message.getUserId())
                 .title(message.getTitle())
                 .body(message.getBody())
-                .contactId(message.getUserId())
                 .date(Instant.ofEpochSecond(message.getDate()))
                 .direction(message.isOut() ? Direction.OUTPUT : Direction.INPUT)
                 .build();

@@ -2,9 +2,7 @@ package contactus.repository.inmem;
 
 import contactus.repository.Repository;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 abstract class InMemoryRepository<T> implements Repository<T> {
     private final Map<Integer, T> data = new HashMap<>();
@@ -15,7 +13,7 @@ abstract class InMemoryRepository<T> implements Repository<T> {
     }
 
     @Override
-    public void addAll(Collection<T> items) {
+    public void saveAll(Collection<T> items) {
         for (T item : items) {
             save(item);
         }
@@ -31,9 +29,10 @@ abstract class InMemoryRepository<T> implements Repository<T> {
         return data.get(id);
     }
 
+
     @Override
-    public void close() {
-        data.clear();
+    public Set<T> loadAll() {
+        return new HashSet<>(data.values());
     }
 
     protected Map<Integer, T> getData() {

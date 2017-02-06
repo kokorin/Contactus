@@ -1,14 +1,12 @@
 package contactus.repository;
 
-import java.io.Closeable;
 import java.util.Collection;
+import java.util.Set;
 
-public interface Repository<T> extends Closeable {
+public interface Repository<T>{
    void save(T item);
-   void addAll(Collection<T> items);
+   void saveAll(Collection<T> items);
    void delete(int id);
    T load(int id);
-
-   @Override
-   void close();
+   Set<T> loadAll();
 }

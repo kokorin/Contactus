@@ -28,11 +28,9 @@ public class ContactListController {
     private final ContactListData contactListData;
     private final ReadOnlyObjectWrapper<Contact> selectedContact = new ReadOnlyObjectWrapper<>();
 
-    private static final ContactGroup EVERYONE;
-    static  {
-        EVERYONE = new ContactGroup();
-        EVERYONE.setName("Everyone");
-    }
+    private static final ContactGroup EVERYONE = ContactGroup.builder()
+            .name("Everyone")
+            .build();
 
     public ContactListController(ContactListData contactListData) {
         this.contactListData = contactListData;
@@ -47,7 +45,7 @@ public class ContactListController {
         ObservableList<ContactGroup> groups = FXCollections.observableArrayList();
         groups.add(EVERYONE);
         ObservableList<ContactGroup> realGroups = contactListData.getContactGroups();
-        Bindings.bindContent(groups.subList(1,1), realGroups);
+        Bindings.bindContent(groups.subList(1, 1), realGroups);
 
 
         groupSelector.setItems(groups);

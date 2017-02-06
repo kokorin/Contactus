@@ -4,14 +4,14 @@ import contactus.model.Message;
 import contactus.repository.MessageRepository;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 class InMemoryMessageRepository extends InMemoryRepository<Message> implements MessageRepository {
-    @Override
-    public int maxId() {
-        return getData().keySet().stream().mapToInt(Integer::intValue).max().orElse(0);
-    }
+    private int pts = 1;
 
     @Override
     protected int getId(Message item) {
@@ -19,36 +19,22 @@ class InMemoryMessageRepository extends InMemoryRepository<Message> implements M
     }
 
     @Override
-    public List<Message> loadAll(Integer userId) {
-        List<Message> result = getData().values().stream()
-                .filter(m -> Objects.equals(m.getContactId(), userId))
-                .collect(Collectors.toList());
-        result.sort(Comparator.comparing(Message::getDate).reversed());
-
-        return result;
-    }
-
-    @Override
-    public List<Message> loadAll(Integer contactId, Instant since) {
-        List<Message> result = getData().values().stream()
-                .filter(m -> Objects.equals(m.getContactId(), contactId))
-                .filter(m -> m.getDate().isAfter(since))
-                .collect(Collectors.toList());
-        result.sort(Comparator.comparing(Message::getDate).reversed());
-
-        return result;
-    }
-
-    @Override
-    public Message loadLast(Integer contactId) {
+    public Set<Message> loadAll(Integer contactId) {
         return getData().values().stream()
                 .filter(m -> Objects.equals(m.getContactId(), contactId))
-                .reduce((l, r) -> l.getDate().isAfter(r.getDate()) ? l : r)
-                .orElse(null);
+                .collect(Collectors.toSet());
     }
 
     @Override
-    public List<Message> loadLast() {
+    public Set<Message> loadAll(Integer contactId, Instant since) {
+        return getData().values().stream()
+                .filter(m -> Objects.equals(m.getContactId(), contactId))
+                .filter(m -> m.getDate().isAfter(since))
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<Message> loadLast() {
         Map<Integer, Integer> lastMsgId = new HashMap<>();
         for (Message message : getData().values()) {
             Integer lastId = lastMsgId.get(message.getContactId());
@@ -57,7 +43,7 @@ class InMemoryMessageRepository extends InMemoryRepository<Message> implements M
             }
         }
 
-        return lastMsgId.values().stream().map(this::load).collect(Collectors.toList());
+        return lastMsgId.values().stream().map(this::load).collect(Collectors.toSet());
     }
 
     @Override
@@ -72,5 +58,15 @@ class InMemoryMessageRepository extends InMemoryRepository<Message> implements M
         }
 
         return result;
+    }
+
+    @Override
+    public void saveLastPts(int value) {
+        this.pts = value;
+    }
+
+    @Override
+    public int loadLastPts() {
+        return pts;
     }
 }

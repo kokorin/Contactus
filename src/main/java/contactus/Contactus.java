@@ -18,7 +18,7 @@ import contactus.event.SessionEvent;
 import contactus.picocontainer.ContainerAdapter;
 import contactus.repository.RepositoryFactory;
 import contactus.repository.RepositorySaver;
-import contactus.repository.inmem.InMemoryRepositoryFactory;
+import contactus.repository.jdbc.JdbcRepositoryFactory;
 import contactus.view.View;
 import contactus.view.contact.ContactListController;
 import contactus.view.login.LoginController;
@@ -98,11 +98,12 @@ public class Contactus extends Application {
             authContainer = null;
         }
 
-        LoginController controller = mainContainer.getComponent(View.class)
-                .forController(LoginController.class)
-                .onStage(primaryStage)
-                .withTitle("Contactus Login")
-                .show();
+        Platform.runLater(() -> mainContainer.getComponent(View.class)
+                        .forController(LoginController.class)
+                        .onStage(primaryStage)
+                        .withTitle("Contactus Login")
+                        .show()
+        );
     }
 
     private void showMain(Session session) {
@@ -113,11 +114,13 @@ public class Contactus extends Application {
                 .withCaching()
                 .build();
 
-        RepositoryFactory repositoryFactory = new InMemoryRepositoryFactory();
+        //RepositoryFactory repositoryFactory = new InMemoryRepositoryFactory();
+        RepositoryFactory repositoryFactory = new JdbcRepositoryFactory(session.getUserId());
 
         authContainer
                 .addComponent(session)
                 .addComponent(repositoryFactory.openContactRepository())
+                .addComponent(repositoryFactory.openContactGroupRepository())
                 .addComponent(repositoryFactory.openMessageRepository())
                 .addComponent(View.class)
                 .addAdapter(new ContainerAdapter())
@@ -138,10 +141,11 @@ public class Contactus extends Application {
         authContainer.getComponent(Sender.class);
         authContainer.getComponent(EventConverter.class);
 
-        authContainer.getComponent(View.class)
+        Platform.runLater(() -> authContainer.getComponent(View.class)
                 .forController(MainController.class)
                 .onStage(primaryStage)
-                .show();
+                .show()
+        );
     }
 
 

@@ -5,31 +5,30 @@ import com.google.common.eventbus.Subscribe;
 import contactus.event.MessageEvent;
 import contactus.event.MessageEvent.Type;
 import contactus.model.Message;
+import contactus.repository.ContactGroupRepository;
 import contactus.repository.MessageRepository;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import lombok.RequiredArgsConstructor;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
+@RequiredArgsConstructor
 public class MessageListData {
     private final EventBus eventBus;
     private final MessageRepository messageRepository;
+    private final ContactGroupRepository contactGroupRepository;
     private Integer contactId;
     private final ObservableList<Message> messages = FXCollections.observableArrayList();
 
-    public MessageListData(EventBus eventBus, MessageRepository messageRepository) {
-        this.eventBus = eventBus;
-        this.messageRepository = messageRepository;
-    }
-
     public void setContactId(Integer contactId) {
         this.contactId = contactId;
-        List<Message> contactMessages = messageRepository.loadAll(contactId);
+        Set<Message> contactMessages = messageRepository.loadAll(contactId);
         Platform.runLater(() -> messages.setAll(contactMessages));
     }
 

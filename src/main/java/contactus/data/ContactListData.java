@@ -8,32 +8,30 @@ import contactus.event.MessageEvent;
 import contactus.model.Contact;
 import contactus.model.ContactGroup;
 import contactus.model.Message;
+import contactus.repository.ContactGroupRepository;
 import contactus.repository.ContactRepository;
 import contactus.repository.MessageRepository;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import lombok.AllArgsConstructor;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+@AllArgsConstructor
 public class ContactListData {
     private final EventBus eventBus;
     private final ContactRepository contactRepository;
+    private final ContactGroupRepository contactGroupRepository;
     private final MessageRepository messageRepository;
 
     private final Map<Integer, ContactBinding> bindingMap = new HashMap<>();
     private final ObservableList<ContactBinding> contactList = FXCollections.observableArrayList();
     private final ObservableList<ContactGroup> groupList = FXCollections.observableArrayList();
-
-    public ContactListData(EventBus eventBus, ContactRepository contactRepository, MessageRepository messageRepository) {
-        this.eventBus = eventBus;
-        this.contactRepository = contactRepository;
-        this.messageRepository = messageRepository;
-    }
 
     public ObservableList<ContactBinding> getContacts() {
         return FXCollections.unmodifiableObservableList(contactList);
@@ -54,7 +52,7 @@ public class ContactListData {
             Platform.runLater(() -> binding.setContact(contact));
         }
 
-        List<ContactGroup> loadedGroups = contactRepository.loadGroups();
+        Set<ContactGroup> loadedGroups = contactGroupRepository.loadAll();
         Platform.runLater(() -> groupList.setAll(loadedGroups));
 
         for (Message message : messageRepository.loadLast()) {

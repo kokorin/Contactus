@@ -14,28 +14,46 @@ public class Contact {
     private final Integer id;
     private final String firstName;
     private final String lastName;
-    private final String deactivated;
+    private final boolean deactivated;
     private final boolean hidden;
     private final Sex sex;
     private final State state;
     private final String screenName;
     private final String photo50;
     private final String photo100;
-    private final Integer online;
+    private final boolean online;
     @NonNull
     private final List<Integer> groups;
 
     public enum Sex {
         MALE,
         FEMALE,
-        UNKNOWN
+        UNKNOWN;
+
+        public static Sex parse(String value) {
+            for (Sex sex : Sex.values()) {
+                if (sex.name().equals(value)) {
+                    return sex;
+                }
+            }
+            return null;
+        }
     }
 
     public enum State {
         NOT_CONFIRMED,
         INVITED,
         WAITING_FOR_ACCEPT,
-        CONFIRMED
+        CONFIRMED;
+
+        public static State parse(String value) {
+            for (State state : State.values()) {
+                if (state.name().equals(value)) {
+                    return state;
+                }
+            }
+            return null;
+        }
     }
 
     public static class ContactBuilder {
