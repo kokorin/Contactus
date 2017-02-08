@@ -2,64 +2,65 @@ package contactus.repository.jdbc;
 
 import contactus.model.Message;
 import contactus.repository.MessageRepository;
+import contactus.repository.jdbc.operation.Delete;
+import contactus.repository.jdbc.operation.Merge;
+import contactus.repository.jdbc.operation.Select;
 import javafx.util.Pair;
 import lombok.SneakyThrows;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
-class JdbcMessageRepository extends JdbcRepository<Message> implements MessageRepository {
+class JdbcMessageRepository implements MessageRepository {
+
+    private final Connection connection;
 
     public JdbcMessageRepository(Connection connection) {
-        super(connection);
+        this.connection = connection;
     }
 
     @Override
-    protected int getId(Message item) {
-        return item.getId();
+    public void save(Message item) {
+        saveAll(Collections.singletonList(item));
     }
 
     @Override
-    protected String getTableName() {
-        return "Message";
+    public void saveAll(Collection<Message> items) {
+        new Merge<Message>().setTableName("Message")
+                .setItems(items)
+                .setColumnNames(COLUMN_NAMES)
+                .setGetValues(JdbcMessageRepository::getValues)
+                .setIdField("id")
+                .setGetId(Message::getId)
+                .execute(connection);
     }
 
     @Override
-    protected List<String> getColumnNames() {
-        return Arrays.asList(
-                "id",
-                "contactId",
-                "randomId",
-                "date",
-                "direction",
-                "important",
-                "deleted",
-                "unread",
-                "title",
-                "body"
-        );
+    public void delete(int id) {
+        new Delete().setTableName("Message")
+                .setClause("id =" + id)
+                .execute(connection);
     }
 
     @Override
-    protected List<Object> getValues(Message item) {
-        return Arrays.asList(
-                item.getId(),
-                item.getContactId(),
-                item.getRandomId(),
-                convert(item.getDate(), Instant::toEpochMilli),
-                convert(item.getDirection(), Enum::name),
-                item.isImportant(),
-                item.isDeleted(),
-                item.isUnread(),
-                item.getTitle(),
-                item.getBody()
-        );
+    public Message load(int id) {
+        return new Select<Message>().setTableName("Message")
+                .setClause("id = " + id)
+                .setParser(JdbcMessageRepository::parseMessage)
+                .execute(connection)
+                .stream()
+                .findAny()
+                .orElse(null);
+    }
+
+    @Override
+    public Set<Message> loadAll() {
+        return new Select<Message>().setTableName("Message")
+                .setParser(JdbcMessageRepository::parseMessage)
+                .execute(connection);
     }
 
     @Override
@@ -69,35 +70,36 @@ class JdbcMessageRepository extends JdbcRepository<Message> implements MessageRe
 
     @Override
     public Set<Message> loadAll(Integer contactId, Instant since) {
-        return loadByQuery(
-                "SELECT * FROM " + getTableName()
-                        + " WHERE contactId = " + contactId
-                        + " AND date > " + since.toEpochMilli()
-        );
+        return new Select<Message>().setTableName("Message")
+                .setClause("contactId = " + contactId
+                        + " AND date > " + since.toEpochMilli())
+                .setParser(JdbcMessageRepository::parseMessage)
+                .execute(connection);
     }
 
     @Override
     public Set<Message> loadLast() {
-        return loadByQuery(
-                "   SELECT * FROM " + getTableName()
-                        + " WHERE id IN ("
-                        + "     SELECT lastId FROM ("
-                        + "         SELECT contactId, MAX(id) AS lastId"
-                        + "         FROM " + getTableName()
-                        + "         GROUP BY contactId"
-                        + "     )"
-                        + " )"
-        );
+        String mostRecentClause = " id IN ("
+                + "     SELECT lastId FROM ("
+                + "         SELECT contactId, MAX(id) AS lastId"
+                + "         FROM Message"
+                + "         GROUP BY contactId"
+                + "     )"
+                + " )";
+
+        return new Select<Message>().setTableName("Message")
+                .setClause(mostRecentClause)
+                .setParser(JdbcMessageRepository::parseMessage)
+                .execute(connection);
     }
 
     @Override
     @SneakyThrows
     public Map<Integer, Integer> loadUnreadCount() {
-        return loadByQuery(
-                "SELECT id, COUNT(1) FROM " + getTableName()
-                        + " WHERE unread "
-                        + " GROUP BY id",
-                this::parseContactUnreadCount)
+        return new Select<Pair<Integer, Integer>>().setTableName("Message")
+                .setFields("id", "COUNT(1)")
+                .setGroupBy("id")
+                .execute(connection)
                 .stream()
                 .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
     }
@@ -112,9 +114,36 @@ class JdbcMessageRepository extends JdbcRepository<Message> implements MessageRe
         return 1;
     }
 
-    @Override
+    private static final List<String> COLUMN_NAMES = Arrays.asList(
+            "id",
+            "contactId",
+            "randomId",
+            "date",
+            "direction",
+            "important",
+            "deleted",
+            "unread",
+            "title",
+            "body"
+    );
+
+    private static List<Object> getValues(Message item) {
+        return Arrays.asList(
+                item.getId(),
+                item.getContactId(),
+                item.getRandomId(),
+                item.getDate() != null ? item.getDate().toEpochMilli() : null,
+                item.getDirection() != null ? item.getDirection().name() : null,
+                item.isImportant(),
+                item.isDeleted(),
+                item.isUnread(),
+                item.getTitle(),
+                item.getBody()
+        );
+    }
+
     @SneakyThrows
-    protected Message parseItem(ResultSet resultSet) {
+    private static Message parseMessage(ResultSet resultSet) {
         return Message.builder()
                 .id(resultSet.getInt("id"))
                 .contactId(resultSet.getInt("contactId"))
