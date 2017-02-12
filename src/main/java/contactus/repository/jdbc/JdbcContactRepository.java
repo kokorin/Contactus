@@ -139,7 +139,7 @@ class JdbcContactRepository implements ContactRepository {
                         .id(contactId)
                         .firstName(resultSet.getString("firstName"))
                         .lastName(resultSet.getString("lastName"))
-                        .groups(contactGroupMap.get(contactId))
+                        .groups(contactGroupMap.getOrDefault(contactId, Collections.emptyList()))
                         .deactivated(resultSet.getBoolean("deactivated"))
                         .hidden(resultSet.getBoolean("hidden"))
                         .sex(Contact.Sex.parse(resultSet.getString("sex")))

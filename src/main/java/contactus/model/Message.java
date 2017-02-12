@@ -6,7 +6,7 @@ import java.time.Instant;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Builder
+@Builder(toBuilder = true)
 public class Message {
     private final Integer id;
     @NonNull

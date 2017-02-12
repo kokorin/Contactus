@@ -60,9 +60,11 @@ public class ContactListData {
             Platform.runLater(() -> binding.setLastMessage(message));
         }
 
-        for (Map.Entry<Integer, Integer> entry : messageRepository.loadUnreadCount().entrySet()) {
-            ContactBinding binding = getContactBinding(entry.getKey());
-            Platform.runLater(() -> binding.setUnreadCount(entry.getValue()));
+        for (Map.Entry<Integer, Set<Integer>> entry : messageRepository.loadUnreadIds().entrySet()) {
+            Integer contactId = entry.getKey();
+            Set<Integer> messageIds = entry.getValue();
+            ContactBinding binding = getContactBinding(contactId);
+            Platform.runLater(() -> binding.setUnreadMessageIds(messageIds));
         }
     }
 
@@ -85,8 +87,18 @@ public class ContactListData {
     public void onMessageEvent(MessageEvent messageEvent) {
         Message message = messageEvent.getMessage();
         ContactBinding binding = getContactBinding(message.getContactId());
-        Platform.runLater(() -> binding.setLastMessage(message));
-        //TODO update unread count
+        Message prevMessage = binding.getLastMessage();
+
+        Platform.runLater(() -> {
+            if (prevMessage == null || prevMessage.getDate().isBefore(message.getDate())) {
+                binding.setLastMessage(message);
+            }
+            if (message.isUnread()) {
+                binding.getUnreadMessageIds().add(message.getId());
+            } else {
+                binding.getUnreadMessageIds().remove(message.getId());
+            }
+        });
     }
 
     @Subscribe

@@ -5,8 +5,7 @@ import com.google.common.eventbus.Subscribe;
 import com.vk.api.sdk.objects.friends.FriendsList;
 import com.vk.api.sdk.objects.friends.UserXtrLists;
 import com.vk.api.sdk.objects.messages.Message;
-import com.vk.api.sdk.objects.updates.AddMessage;
-import com.vk.api.sdk.objects.updates.Update;
+import com.vk.api.sdk.objects.updates.*;
 import com.vk.api.sdk.objects.users.User;
 import contactus.event.ContactEvent;
 import contactus.event.ContactGroupEvent;
@@ -15,6 +14,7 @@ import contactus.model.Contact;
 import contactus.model.ContactGroup;
 import contactus.model.Message.Direction;
 import contactus.repository.ContactRepository;
+import contactus.repository.MessageRepository;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -23,10 +23,12 @@ import java.time.Instant;
 public class EventConverter {
     private final EventBus eventBus;
     private final ContactRepository contactRepository;
+    private final MessageRepository messageRepository;
 
-    public EventConverter(EventBus eventBus, ContactRepository contactRepository) {
+    public EventConverter(EventBus eventBus, ContactRepository contactRepository, MessageRepository messageRepository) {
         this.eventBus = eventBus;
         this.contactRepository = contactRepository;
+        this.messageRepository = messageRepository;
     }
 
     @PostConstruct
@@ -106,6 +108,28 @@ public class EventConverter {
     public void convertUpdate(Update update) {
         if (update instanceof AddMessage) {
             convertMessage(((AddMessage) update).getMessage());
+        } else if (update instanceof SetMessageFlags) {
+            SetMessageFlags setMessageFlags = (SetMessageFlags) update;
+            contactus.model.Message message = messageRepository.load(setMessageFlags.getMessageId());
+            contactus.model.Message.MessageBuilder builder = message.toBuilder();
+
+            if (!setMessageFlags.getFlags().contains(MessageFlag.UNREAD)) {
+                builder.unread(false);
+            }
+
+            MessageEvent event = new MessageEvent(MessageEvent.Type.UPDATE, builder.build());
+            eventBus.post(event);
+        } else if (update instanceof RemoveMessageFlags) {
+            RemoveMessageFlags removeMessageFlags = (RemoveMessageFlags) update;
+            contactus.model.Message message = messageRepository.load(removeMessageFlags.getMessageId());
+            contactus.model.Message.MessageBuilder builder = message.toBuilder();
+
+            if (removeMessageFlags.getFlags().contains(MessageFlag.UNREAD)) {
+                builder.unread(false);
+            }
+
+            MessageEvent event = new MessageEvent(MessageEvent.Type.UPDATE, builder.build());
+            eventBus.post(event);
         }
     }
 }

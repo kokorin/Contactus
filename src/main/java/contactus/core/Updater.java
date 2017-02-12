@@ -79,7 +79,6 @@ public class Updater implements Runnable {
                             .map(GetLongPollHistoryResponse::getMessages)
                             .map(LongpollMessages::getMessages)
                             .orElse(Collections.<Message>emptyList())
-                            .stream()
                             .forEach(eventBus::post);
 
                     pts = historyResponse.getNewPts();

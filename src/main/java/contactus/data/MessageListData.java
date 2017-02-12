@@ -57,7 +57,8 @@ public class MessageListData {
             return;
         }
 
-        if (messageEvent.getType() == Type.UPDATE) {int index = -1;
+        if (messageEvent.getType() == Type.UPDATE) {
+            int index = -1;
             //Looking for message with the same id
             //TODO reverse loop?
             for (int i = 0; i < messages.size(); ++i) {

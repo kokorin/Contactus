@@ -12,7 +12,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.time.Instant;
 import java.util.*;
-import java.util.stream.Collectors;
 
 class JdbcMessageRepository implements MessageRepository {
 
@@ -95,13 +94,17 @@ class JdbcMessageRepository implements MessageRepository {
 
     @Override
     @SneakyThrows
-    public Map<Integer, Integer> loadUnreadCount() {
-        return new Select<Pair<Integer, Integer>>().setTableName("Message")
-                .setFields("id", "COUNT(1)")
-                .setGroupBy("id")
+    public Map<Integer, Set<Integer>> loadUnreadIds() {
+        Map<Integer, Set<Integer>> result = new HashMap<>();
+
+        new Select<Pair<Integer, Integer>>().setTableName("Message")
+                .setFields("contactId", "id")
+                .setClause("unread")
+                .setParser(JdbcMessageRepository::parseUnreadIds)
                 .execute(connection)
-                .stream()
-                .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+                .forEach(pair -> result.computeIfAbsent(pair.getKey(), key -> new HashSet<>()).add(pair.getValue()));
+
+        return result;
     }
 
     @Override
@@ -160,9 +163,9 @@ class JdbcMessageRepository implements MessageRepository {
     }
 
     @SneakyThrows
-    protected Pair<Integer, Integer> parseContactUnreadCount(ResultSet resultSet) {
+    private static Pair<Integer, Integer> parseUnreadIds(ResultSet resultSet) {
         int contactId = resultSet.getInt("contactId");
-        int count = resultSet.getInt("count");
-        return new Pair<>(contactId, count);
+        int messageId = resultSet.getInt("id");
+        return new Pair<>(contactId, messageId);
     }
 }

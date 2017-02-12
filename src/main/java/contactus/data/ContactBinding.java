@@ -2,15 +2,26 @@ package contactus.data;
 
 import contactus.model.Contact;
 import contactus.model.Message;
-import javafx.beans.property.IntegerProperty;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.ReadOnlyIntegerProperty;
+import javafx.beans.property.ReadOnlyIntegerWrapper;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableSet;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class ContactBinding {
     private final ObjectProperty<Contact> contact = new SimpleObjectProperty<>();
     private final ObjectProperty<Message> lastMessage = new SimpleObjectProperty<>();
-    private final IntegerProperty unreadCount = new SimpleIntegerProperty();
+    private final ObservableSet<Integer> unreadMessageIds = FXCollections.observableSet(new HashSet<Integer>());
+    private final ReadOnlyIntegerWrapper unreadCount = new ReadOnlyIntegerWrapper();
+
+    public ContactBinding() {
+        unreadCount.bind(Bindings.size(unreadMessageIds));
+    }
 
     public Contact getContact() {
         return contact.get();
@@ -36,15 +47,20 @@ public class ContactBinding {
         this.lastMessage.set(lastMessage);
     }
 
+    public ObservableSet<Integer> getUnreadMessageIds() {
+        return unreadMessageIds;
+    }
+
+    public void setUnreadMessageIds(Set<Integer> ids) {
+        unreadMessageIds.clear();
+        unreadMessageIds.addAll(ids);
+    }
+
     public int getUnreadCount() {
         return unreadCount.get();
     }
 
-    public IntegerProperty unreadCountProperty() {
-        return unreadCount;
-    }
-
-    public void setUnreadCount(int unreadCount) {
-        this.unreadCount.set(unreadCount);
+    public ReadOnlyIntegerProperty unreadCountProperty() {
+        return unreadCount.getReadOnlyProperty();
     }
 }
