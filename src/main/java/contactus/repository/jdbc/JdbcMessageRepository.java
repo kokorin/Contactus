@@ -77,6 +77,16 @@ class JdbcMessageRepository implements MessageRepository {
     }
 
     @Override
+    public Set<Message> loadAllUnread(Integer contactId, Message.Direction direction) {
+        return new Select<Message>().setTableName("Message")
+                .setClause("contactId = " + contactId
+                        + " AND direction = '" + direction.name() +"'"
+                        + " AND unread")
+                .setParser(JdbcMessageRepository::parseMessage)
+                .execute(connection);
+    }
+
+    @Override
     public Set<Message> loadLast() {
         String mostRecentClause = " id IN ("
                 + "     SELECT lastId FROM ("

@@ -66,6 +66,7 @@ public class Updater implements Runnable {
 
                 while (params.getPts() > pts && !stopped) {
                     GetLongPollHistoryResponse historyResponse = client.messages().getLongPollHistory(session.getActor())
+                            .fields(UserField.NICKNAME, UserField.SCREEN_NAME, UserField.PHOTO_50)
                             .pts(pts)
                             .execute();
 

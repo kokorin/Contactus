@@ -1,0 +1,8 @@
+<?import contactus.view.contact.ContactRenderer?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<fx:root xmlns:fx="http://www.w3.org/1999/xhtml" type="contactus.view.contact.ContactRenderer">
+    <ImageView fx:id="avatarView"/>
+    <Label fx:id="nameLabel"/>
+    <Label fx:id="unreadCountLabel"/>
+</fx:root>

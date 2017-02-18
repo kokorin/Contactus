@@ -31,6 +31,15 @@ class InMemoryMessageRepository extends InMemoryRepository<Message> implements M
     }
 
     @Override
+    public Set<Message> loadAllUnread(Integer contactId, Message.Direction direction) {
+        return getData().values().stream()
+                .filter(Message::isUnread)
+                .filter(m -> Objects.equals(m.getContactId(), contactId))
+                .filter(m -> Objects.equals(m.getDirection(), direction))
+                .collect(Collectors.toSet());
+    }
+
+    @Override
     public Set<Message> loadLast() {
         Map<Integer, Integer> lastMsgId = new HashMap<>();
         for (Message message : getData().values()) {

@@ -19,6 +19,7 @@ import contactus.repository.MessageRepository;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.time.Instant;
+import java.util.Set;
 
 public class EventConverter {
     private final EventBus eventBus;
@@ -81,9 +82,10 @@ public class EventConverter {
     private Contact.ContactBuilder toContact(User user) {
         return Contact.builder()
                 .id(user.getId())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .screenName(user.getScreenName());
+                .name(user.getFirstName())
+                .surname(user.getLastName())
+                .nick(user.getScreenName())
+                .avatarUrl(user.getPhoto50());
     }
 
     @Subscribe
@@ -96,6 +98,7 @@ public class EventConverter {
                 .body(message.getBody())
                 .date(Instant.ofEpochSecond(message.getDate()))
                 .direction(message.isOut() ? Direction.OUTPUT : Direction.INPUT)
+                .unread(!message.isReadState() && !message.isOut())
                 .build();
 
         MessageEvent.Type type = result.getDirection() == Direction.INPUT ?
@@ -130,6 +133,32 @@ public class EventConverter {
 
             MessageEvent event = new MessageEvent(MessageEvent.Type.UPDATE, builder.build());
             eventBus.post(event);
+        } else if (update instanceof ReadAllIncomingMessages) {
+            ReadAllIncomingMessages readAllIncomingMessages = (ReadAllIncomingMessages) update;
+            Set<contactus.model.Message> unreads = messageRepository.loadAllUnread(readAllIncomingMessages.getPeerId(), Direction.INPUT);
+
+            for (contactus.model.Message message : unreads) {
+                if (message.getId() > readAllIncomingMessages.getMessageId()) {
+                    continue;
+                }
+
+                message = message.toBuilder().unread(false).build();
+                MessageEvent event = new MessageEvent(MessageEvent.Type.UPDATE, message);
+                eventBus.post(event);
+            }
+        } else if (update instanceof ReadAllOutgoingMessages) {
+            ReadAllOutgoingMessages readAllOutgoingMessages = (ReadAllOutgoingMessages) update;
+            Set<contactus.model.Message> unreads = messageRepository.loadAllUnread(readAllOutgoingMessages.getPeerId(), Direction.OUTPUT);
+
+            for (contactus.model.Message message : unreads) {
+                if (message.getId() > readAllOutgoingMessages.getMessageId()) {
+                    continue;
+                }
+
+                message = message.toBuilder().unread(false).build();
+                MessageEvent event = new MessageEvent(MessageEvent.Type.UPDATE, message);
+                eventBus.post(event);
+            }
         }
     }
 }

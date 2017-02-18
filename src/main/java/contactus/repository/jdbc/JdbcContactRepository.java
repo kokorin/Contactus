@@ -95,14 +95,14 @@ class JdbcContactRepository implements ContactRepository {
 
     private static final List<String> COLUMN_NAMES = Arrays.asList(
             "id",
-            "firstName",
-            "lastName",
+            "name",
+            "surname",
             "deactivated",
             "hidden",
             "sex",
             "state",
-            "screenName",
-            "photo50",
+            "nick",
+            "avatarUrl",
             "photo100",
             "online"
     );
@@ -110,14 +110,14 @@ class JdbcContactRepository implements ContactRepository {
     private static final List<Object> getValues(Contact item) {
         return Arrays.asList(
                 item.getId(),
-                item.getFirstName(),
-                item.getLastName(),
+                item.getName(),
+                item.getSurname(),
                 item.isDeactivated(),
                 item.isHidden(),
                 item.getSex() != null ? item.getSex().name() : null,
                 item.getState() != null ? item.getState().name() : null,
-                item.getScreenName(),
-                item.getPhoto50(),
+                item.getNick(),
+                item.getAvatarUrl(),
                 item.getPhoto100(),
                 item.isOnline()
         );
@@ -137,15 +137,15 @@ class JdbcContactRepository implements ContactRepository {
                 int contactId = resultSet.getInt("id");
                 return Contact.builder()
                         .id(contactId)
-                        .firstName(resultSet.getString("firstName"))
-                        .lastName(resultSet.getString("lastName"))
+                        .name(resultSet.getString("name"))
+                        .surname(resultSet.getString("surname"))
                         .groups(contactGroupMap.getOrDefault(contactId, Collections.emptyList()))
                         .deactivated(resultSet.getBoolean("deactivated"))
                         .hidden(resultSet.getBoolean("hidden"))
                         .sex(Contact.Sex.parse(resultSet.getString("sex")))
                         .state(Contact.State.parse(resultSet.getString("state")))
-                        .screenName(resultSet.getString("screenName"))
-                        .photo50(resultSet.getString("photo50"))
+                        .nick(resultSet.getString("nick"))
+                        .avatarUrl(resultSet.getString("avatarUrl"))
                         .photo100(resultSet.getString("photo100"))
                         .online(resultSet.getBoolean("online"))
                         .build();

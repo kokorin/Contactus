@@ -12,14 +12,14 @@ import java.util.List;
 public class Contact {
     @NonNull
     private final Integer id;
-    private final String firstName;
-    private final String lastName;
+    private final String name;
+    private final String surname;
+    private final String nick;
     private final boolean deactivated;
     private final boolean hidden;
     private final Sex sex;
     private final State state;
-    private final String screenName;
-    private final String photo50;
+    private final String avatarUrl;
     private final String photo100;
     private final boolean online;
     @NonNull

@@ -33,9 +33,9 @@ public class MessageListData {
     }
 
     public ObservableList<Message> getMessages() {
-        return FXCollections
-                .unmodifiableObservableList(messages)
-                .sorted(Comparator.comparing(Message::getDate));
+        return FXCollections.unmodifiableObservableList(
+                messages.sorted(Comparator.comparing(Message::getDate))
+        );
     }
 
     @PostConstruct
